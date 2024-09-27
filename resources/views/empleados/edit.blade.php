@@ -1,79 +1,113 @@
-<!-- resources/views/empleados/edit.blade.php -->
+<!-- @if($errors->any())
+    <div class="alert alert-danger">
+        <ul>
+            @foreach ($errors->all() as $error)
+            <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+    @endif -->
 @extends('layouts.app')
 
 @section('content')
-<h1>Editar Empleado</h1>
+<h1>{{ isset($empleado) ? 'Editar' : 'Crear' }} Empleado</h1>
 
-<form action="{{ route('empleados.update', $empleado->id) }}" method="POST">
+<form action="{{ isset($empleado) ? route('empleados.update', $empleado) : route('empleados.store') }}" method="POST">
     @csrf
-    @method('PUT') <!-- Necesario para indicar que es una actualización -->
+    @if(isset($empleado))
+    @method('PUT')
+    @endif
 
+    <!-- Campos de empleado -->
     <div class="form-group">
         <label for="nombres">Nombres:</label>
-        <input type="text" name="nombres" id="nombres" class="form-control" value="{{ $empleado->nombres }}" required>
+        <input type="text" name="nombres" class="form-control" value="{{ old('nombres', $empleado->nombres ?? '') }}">
     </div>
 
     <div class="form-group">
         <label for="apellidos">Apellidos:</label>
-        <input type="text" name="apellidos" id="apellidos" class="form-control" value="{{ $empleado->apellidos }}" required>
+        <input type="text" name="apellidos" class="form-control" value="{{ old('apellidos', $empleado->apellidos ?? '') }}">
     </div>
 
     <div class="form-group">
         <label for="identificacion">Identificación:</label>
-        <input type="number" name="identificacion" id="identificacion" class="form-control" value="{{ $empleado->identificacion }}" required>
+        <input type="text" name="identificacion" class="form-control" value="{{ old('identificacion', $empleado->identificacion ?? '') }}">
     </div>
 
     <div class="form-group">
         <label for="direccion">Dirección:</label>
-        <input type="text" name="direccion" id="direccion" class="form-control" value="{{ $empleado->direccion }}" required>
+        <input type="text" name="direccion" class="form-control" value="{{ old('direccion', $empleado->direccion ?? '') }}">
     </div>
 
     <div class="form-group">
         <label for="telefono">Teléfono:</label>
-        <input type="number" name="telefono" id="telefono" class="form-control" value="{{ $empleado->telefono }}" required>
+        <input type="text" name="telefono" class="form-control" value="{{ old('telefono', $empleado->telefono ?? '') }}">
     </div>
 
     <div class="form-group">
         <label for="pais">País:</label>
-        <input type="text" name="pais" id="pais" class="form-control" value="{{ $empleado->pais }}" required>
+        <input type="text" name="pais" class="form-control" value="{{ old('pais', $empleado->pais ?? '') }}">
     </div>
 
     <div class="form-group">
         <label for="ciudad">Ciudad:</label>
-        <input type="text" name="ciudad" id="ciudad" class="form-control" value="{{ $empleado->ciudad }}" required>
+        <input type="text" name="ciudad" class="form-control" value="{{ old('ciudad', $empleado->ciudad ?? '') }}">
     </div>
 
+    <!-- Select para elegir el cargo -->
     <div class="form-group">
-        <label for="cargos">Cargo:</label>
-        <select name="cargos[]" id="cargos" class="form-control" multiple required>
+        <label for="cargo">Cargo:</label>
+        <select name="cargo[]" id="cargo" class="form-control" multiple>
             @foreach($cargos as $cargo)
-            <option value="{{ $cargo->id }}" {{ $empleado->cargos->contains($cargo->id) ? 'selected' : '' }}>
+            <option value="{{ $cargo->id }}"
+                {{ isset($empleado) && $empleado->cargos->contains('nombre', $cargo->nombre) ? 'selected' : '' }}>
                 {{ $cargo->nombre }}
             </option>
             @endforeach
         </select>
     </div>
 
-    <div class="form-group" id="colaboradorSelect" style="display:none;">
+    <!-- Select para asignar Colaboradores -->
+    <div class="form-group" id="colaboradores-section" style="display: none;">
         <label for="colaboradores">Colaboradores:</label>
         <select name="colaboradores[]" id="colaboradores" class="form-control" multiple>
             @foreach($colaboradoresSinJefe as $colaborador)
-            <option value="{{ $colaborador->id }}">{{ $colaborador->nombres }} {{ $colaborador->apellidos }}</option>
+            <option value="{{ $colaborador->id }}">
+                {{ $colaborador->nombres }} {{ $colaborador->apellidos }}
+            </option>
             @endforeach
         </select>
     </div>
 
-    <button type="submit" class="btn btn-primary">Actualizar Empleado</button>
+    @if($errors->any())
+    <div class="alert alert-danger">
+        <ul>
+            @foreach ($errors->all() as $error)
+            <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+    @endif
+
+    <!-- Botón para Guardar -->
+    <button type="submit" class="btn btn-primary">{{ isset($empleado) ? 'Actualizar' : 'Guardar' }}</button>
 </form>
 
 <script>
-    // Lógica similar para mostrar el select de colaboradores si se selecciona "jefe"
-    document.getElementById('cargos').addEventListener('change', function() {
-        const colaboradorSelect = document.getElementById('colaboradorSelect');
-        colaboradorSelect.style.display = this.value.includes('jefe') ? 'block' : 'none';
-    });
+    document.addEventListener('DOMContentLoaded', function() {
+        const cargoSelect = document.getElementById('cargo');
+        const colaboradoresSection = document.getElementById('colaboradores-section');
 
-    // Inicializa el select de colaboradores al cargar la página
-    document.getElementById('cargos').dispatchEvent(new Event('change'));
+        function toggleColaboradores() {
+            if (Array.from(cargoSelect.selectedOptions).some(option => option.value === '2')) {
+                colaboradoresSection.style.display = 'block';
+            } else {
+                colaboradoresSection.style.display = 'none';
+            }
+        }
+
+        cargoSelect.addEventListener('change', toggleColaboradores);
+        toggleColaboradores(); // Ejecutar al cargar la página por si hay selección previa
+    });
 </script>
 @endsection

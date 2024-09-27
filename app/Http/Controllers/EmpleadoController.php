@@ -13,6 +13,7 @@ class EmpleadoController extends Controller
     public function index()
     {
         $empleados = Empleado::with(['colaboradores', 'cargos'])->get();
+
         return view('empleados.index', compact('empleados'));
     }
 
@@ -40,7 +41,7 @@ class EmpleadoController extends Controller
             'telefono' => 'required|integer',
             'pais' => 'required|string|max:255',
             'ciudad' => 'required|string|max:255',
-            'cargo' => 'required|array',
+            //'cargo' => 'required|array',
             //'cargo.*' => 'exists:cargos,nombre', // Validar que los cargos existan
             'colaboradores' => 'nullable|array',
             'colaboradores.*' => 'exists:empleados,id', // Validar que los colaboradores existan
@@ -50,16 +51,21 @@ class EmpleadoController extends Controller
         $empleado = Empleado::create($request->all());
 
         // Asociar cargos
+        //$cargos = Cargo::whereIn('nombre', $request->cargo)->pluck('id')->toArray();
+        //$empleado->cargos()->attach($cargos);
         $empleado->cargos()->attach($request->cargo);
 
-        // Si es jefe, asignar colaboradores
-        if (in_array('jefe', $request->cargo)) {
-            $empleadosSinJefe = Empleado::whereNull('jefe_id')->get();
-            foreach ($request->colaboradores as $colaboradorId) {
-                $colaborador = Empleado::find($colaboradorId);
-                if ($colaborador) {
-                    $colaborador->jefe_id = $empleado->id; // Asignar el jefe al colaborador
-                    $colaborador->save();
+        // Si el cargo es jefe, asignar los colaboradores seleccionados
+        //dd($request->cargo);
+        if (in_array('2', $request->cargo)) {
+            // Verificar si hay colaboradores sele7ccionados y que no sea null
+            if (!empty($request->colaboradores) && is_array($request->colaboradores)) {
+                foreach ($request->colaboradores as $colaboradorId) {
+                    $colaborador = Empleado::find($colaboradorId);
+                    if ($colaborador) {
+                        $colaborador->jefe_id = $empleado->id; // Asigna el jefe_id al colaborador
+                        $colaborador->save();
+                    }
                 }
             }
         }
@@ -87,8 +93,8 @@ class EmpleadoController extends Controller
             'telefono' => 'required|numeric',
             'pais' => 'required|string|max:255',
             'ciudad' => 'required|string|max:255',
-            'cargos' => 'required|array',
-            'cargos.*' => 'exists:cargos,id', // Verifica que los cargos existen
+            //'cargos' => 'required|array',
+            //'cargos.*' => 'exists:cargos,id', // Verifica que los cargos existen
             'colaboradores' => 'array', // Si se seleccionan colaboradores
             'colaboradores.*' => 'exists:empleados,id', // Verifica que los colaboradores existen
         ]);
@@ -97,17 +103,27 @@ class EmpleadoController extends Controller
         $empleado->update($request->except('cargos', 'colaboradores'));
 
         // Sincronizar cargos
-        $empleado->cargos()->sync($request->input('cargos'));
+        $empleado->cargos()->attach($request->cargo);
+        //$empleado->cargos()->sync($request->input('cargos'));
 
         // Limpiar la relación con colaboradores anteriores
         Empleado::where('jefe_id', $empleado->id)->update(['jefe_id' => null]);
 
         // Si es jefe, asignar colaboradores
-        if (in_array('jefe', $request->input('cargos'))) {
-            foreach ($request->input('colaboradores', []) as $colaboradorId) {
+        //dd($request->input('cargos'));
+        if (in_array('2', $request->cargo)) {
+            /* foreach ($request->input('colaboradores', []) as $colaboradorId) {
                 $colaborador = Empleado::find($colaboradorId);
                 $colaborador->jefe_id = $empleado->id;
                 $colaborador->save();
+            } */
+
+            foreach ($request->colaboradores as $colaboradorId) {
+                $colaborador = Empleado::find($colaboradorId);
+                if ($colaborador) {
+                    $colaborador->jefe_id = $empleado->id; // Asigna el jefe_id al colaborador
+                    $colaborador->save();
+                }
             }
         }
 
