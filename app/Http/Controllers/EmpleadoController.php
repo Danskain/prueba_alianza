@@ -103,8 +103,8 @@ class EmpleadoController extends Controller
         $empleado->update($request->except('cargos', 'colaboradores'));
 
         // Sincronizar cargos
-        $empleado->cargos()->attach($request->cargo);
-        //$empleado->cargos()->sync($request->input('cargos'));
+        //$empleado->cargos()->attach($request->cargo);
+        $empleado->cargos()->sync($request->cargo);
 
         // Limpiar la relación con colaboradores anteriores
         Empleado::where('jefe_id', $empleado->id)->update(['jefe_id' => null]);
