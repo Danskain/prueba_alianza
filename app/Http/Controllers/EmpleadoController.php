@@ -12,7 +12,7 @@ class EmpleadoController extends Controller
     // Método para mostrar la lista de empleados
     public function index()
     {
-        $empleados = Empleado::with(['cargos', 'colaboradores'])->get();
+        $empleados = Empleado::with(['colaboradores', 'cargos'])->get();
         return view('empleados.index', compact('empleados'));
     }
 
@@ -31,6 +31,7 @@ class EmpleadoController extends Controller
     // Método para almacenar un nuevo empleado
     public function store(Request $request)
     {
+        //dd($request);
         $request->validate([
             'nombres' => 'required|string|max:255',
             'apellidos' => 'required|string|max:255',
@@ -40,7 +41,7 @@ class EmpleadoController extends Controller
             'pais' => 'required|string|max:255',
             'ciudad' => 'required|string|max:255',
             'cargo' => 'required|array',
-            'cargo.*' => 'exists:cargos,nombre', // Validar que los cargos existan
+            //'cargo.*' => 'exists:cargos,nombre', // Validar que los cargos existan
             'colaboradores' => 'nullable|array',
             'colaboradores.*' => 'exists:empleados,id', // Validar que los colaboradores existan
         ]);

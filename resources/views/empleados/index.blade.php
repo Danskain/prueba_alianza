@@ -41,14 +41,18 @@
                 @endif
             </td>
             <td>
-                @if($empleado->colaboradores->isNotEmpty())
+                @if($empleado->cargos->contains('nombre', 'jefe'))
+                @if($empleado->colaboradores->isEmpty())
+                No tiene colaboradores
+                @else
                 <ul>
                     @foreach($empleado->colaboradores as $colaborador)
                     <li>{{ $colaborador->nombres }} {{ $colaborador->apellidos }}</li>
                     @endforeach
                 </ul>
+                @endif
                 @else
-                Sin colaboradores
+                No es jefe
                 @endif
             </td>
             <td>

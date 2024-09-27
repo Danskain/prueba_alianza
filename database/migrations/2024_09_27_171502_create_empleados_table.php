@@ -16,10 +16,11 @@ return new class extends Migration
             $table->string('nombres');
             $table->string('apellidos');
             $table->bigInteger('identificacion')->unique();
-            $table->string('direccion');
-            $table->bigInteger('telefono');
-            $table->string('pais');
-            $table->string('ciudad');
+            $table->string('direccion')->nullable();
+            $table->bigInteger('telefono')->nullable();
+            $table->string('pais')->nullable();
+            $table->string('ciudad')->nullable();
+            //$table->enum('cargo', ['colaborador', 'jefe', 'presidente']);
             $table->foreignId('jefe_id')->nullable()->constrained('empleados')->onDelete('set null');
             $table->timestamps();
         });

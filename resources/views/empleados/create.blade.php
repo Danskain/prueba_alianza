@@ -59,7 +59,7 @@
         <label for="cargo">Cargo:</label>
         <select name="cargo[]" id="cargo" class="form-control" multiple>
             @foreach($cargos as $cargo)
-            <option value="{{ $cargo->nombre }}"
+            <option value="{{ $cargo->id }}"
                 {{ isset($empleado) && $empleado->cargos->contains('nombre', $cargo->nombre) ? 'selected' : '' }}>
                 {{ $cargo->nombre }}
             </option>
@@ -79,6 +79,16 @@
         </select>
     </div>
 
+    @if($errors->any())
+    <div class="alert alert-danger">
+        <ul>
+            @foreach ($errors->all() as $error)
+            <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+    @endif
+
     <!-- Botón para Guardar -->
     <button type="submit" class="btn btn-primary">{{ isset($empleado) ? 'Actualizar' : 'Guardar' }}</button>
 </form>
@@ -89,7 +99,7 @@
         const colaboradoresSection = document.getElementById('colaboradores-section');
 
         function toggleColaboradores() {
-            if (Array.from(cargoSelect.selectedOptions).some(option => option.value === 'jefe')) {
+            if (Array.from(cargoSelect.selectedOptions).some(option => option.value === '2')) {
                 colaboradoresSection.style.display = 'block';
             } else {
                 colaboradoresSection.style.display = 'none';
