@@ -44,14 +44,32 @@
         <input type="text" name="telefono" class="form-control" value="{{ old('telefono', $empleado->telefono ?? '') }}">
     </div>
 
-    <div class="form-group">
+    <!-- <div class="form-group">
         <label for="pais">País:</label>
         <input type="text" name="pais" class="form-control" value="{{ old('pais', $empleado->pais ?? '') }}">
+    </div> -->
+
+    <!-- Select para País -->
+    <div class="form-group">
+        <label for="pais">País:</label>
+        <select name="pais" id="pais" class="form-control" value="{{ old('pais', $empleado->pais ?? '') }}">
+            <option value="">Seleccione un país</option>
+            <!-- Opciones se cargarán dinámicamente -->
+        </select>
     </div>
 
-    <div class="form-group">
+    <!-- <div class="form-group">
         <label for="ciudad">Ciudad:</label>
         <input type="text" name="ciudad" class="form-control" value="{{ old('ciudad', $empleado->ciudad ?? '') }}">
+    </div> -->
+
+    <!-- Select para Ciudad -->
+    <div class="form-group">
+        <label for="ciudad">Ciudad:</label>
+        <select name="ciudad" id="ciudad" class="form-control" value="{{ old('ciudad', $empleado->ciudad ?? '') }}">
+            <option value="">Seleccione una ciudad</option>
+            <!-- Opciones se cargarán dinámicamente -->
+        </select>
     </div>
 
     <!-- Select para elegir el cargo -->
@@ -95,6 +113,53 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+
+        const paisSelect = document.getElementById('pais');
+        const ciudadSelect = document.getElementById('ciudad');
+
+        // Cargar los países al cargar la página
+        fetch('https://countriesnow.space/api/v0.1/countries')
+            .then(response => response.json())
+            .then(data => {
+                data.data.forEach(country => {
+                    const option = document.createElement('option');
+                    option.value = country.country;
+                    option.textContent = country.country;
+                    paisSelect.appendChild(option);
+                });
+            })
+            .catch(error => console.error('Error al cargar los países:', error));
+
+        // Cargar las ciudades cuando se selecciona un país
+        paisSelect.addEventListener('change', function() {
+            const selectedCountry = paisSelect.value;
+            ciudadSelect.innerHTML = '<option value="">Seleccione una ciudad</option>'; // Limpiar las ciudades previas
+
+            if (selectedCountry) {
+                fetch('https://countriesnow.space/api/v0.1/countries/cities', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            country: selectedCountry
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        data.data.forEach(city => {
+                            const option = document.createElement('option');
+                            option.value = city;
+                            option.textContent = city;
+                            ciudadSelect.appendChild(option);
+                        });
+                    })
+                    .catch(error => console.error('Error al cargar las ciudades:', error));
+            }
+        });
+
+
+        ////////////////////////////////////////////////////////////////
         const cargoSelect = document.getElementById('cargo');
         const colaboradoresSection = document.getElementById('colaboradores-section');
 
